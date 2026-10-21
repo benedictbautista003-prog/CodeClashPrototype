@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CODE CLASH — 2-Player Programming Battle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="grid-overlay" aria-hidden="true"></div>
+
+<section id="screen-menu" class="screen">
+  <div class="panel menu-panel">
+
+    <div class="menu-account-bar">
+      <div class="account-chip">
+        <span class="account-chip-dot" aria-hidden="true"></span>
+        <span id="menu-account-name" class="account-chip-name">CALLSIGN</span>
+        <span id="menu-account-tier" class="account-chip-tier">BRONZE</span>
+        <span id="menu-account-rating" class="account-chip-rating">1200</span>
+      </div>
+      <button id="btn-sign-out" class="btn btn-ghost btn-small">SIGN OUT</button>
+    </div>
+
+    <h2 class="panel-title">MENU</h2>
+    <p class="menu-hint">Pick what you want to do next. Your rating and history update after every rated match.</p>
+
+    <div class="menu-options">
+      <button id="btn-local" class="btn btn-primary menu-option">
+        <span class="menu-option-label">LOCAL MATCH</span>
+        <span class="menu-option-hint">Two players, one screen.</span>
+      </button>
+      <button id="btn-online" class="btn btn-primary btn-online menu-option">
+        <span class="menu-option-label">ONLINE MATCH</span>
+        <span class="menu-option-hint">Battle a friend on another device.</span>
+      </button>
+      <button id="btn-how" class="btn btn-ghost menu-option">
+        <span class="menu-option-label">HOW TO PLAY</span>
+        <span class="menu-option-hint">Rules, scoring and how rating works.</span>
+      </button>
+      <button id="btn-menu-history" class="btn btn-ghost menu-option">
+        <span class="menu-option-label">MATCH HISTORY</span>
+        <span class="menu-option-hint">Every rated match you have played.</span>
+      </button>
+    </div>
+
+    <button id="btn-menu-dashboard" class="btn btn-ghost menu-back">DASHBOARD</button>
+  </div>
+</section>
+
+<section id="screen-auth" class="screen active">
+  <p class="kicker">TWO PROGRAMMERS ENTER. ONE WINS.</p>
+  <h1 class="game-title">
+    <span class="title-line">CODE</span>
+    <span class="title-line title-accent">CLASH</span>
+  </h1>
+  <p class="subtitle">2-PLAYER PROGRAMMING BATTLE</p>
+
+  <div id="auth-choice" class="auth-topbar">
+    <button id="tab-login" class="auth-choice-btn auth-choice-login" type="button" aria-pressed="false">
+      <span class="auth-choice-title">LOG IN</span>
+    </button>
+    <button id="tab-register" class="auth-choice-btn auth-choice-register" type="button" aria-pressed="false">
+      <span class="auth-choice-title">SIGN UP</span>
+    </button>
+  </div>
+
+  <div id="auth-panel" class="panel auth-panel" hidden>
+    <h2 class="panel-title">PLAYER ACCESS</h2>
+
+    <p id="auth-error" class="lobby-error" hidden></p>
+    <p id="auth-info" class="auth-info" hidden></p>
+
+    <form id="auth-form" class="auth-form" novalidate hidden>
+      <p id="auth-form-heading" class="auth-form-heading">LOG IN</p>
+      <div class="setup-row">
+        <label class="setup-label p1-color" for="input-auth-name">CALLSIGN</label>
+        <input id="input-auth-name" class="setup-input p1-border" type="text" maxlength="14"
+               placeholder="PLAYER_ONE" autocomplete="username" spellcheck="false">
+      </div>
+
+      <div class="setup-row">
+        <label class="setup-label p1-color" for="input-auth-password">PASSWORD</label>
+        <input id="input-auth-password" class="setup-input p1-border auth-password-input" type="password"
+               maxlength="64" placeholder="••••••••" autocomplete="current-password">
+      </div>
+
+      <div class="setup-row" id="auth-confirm-row" hidden>
+        <label class="setup-label p1-color" for="input-auth-confirm">CONFIRM PASSWORD</label>
+        <input id="input-auth-confirm" class="setup-input p1-border auth-password-input" type="password"
+               maxlength="64" placeholder="••••••••" autocomplete="new-password">
+      </div>
+
+      <button type="submit" id="btn-auth-submit" class="btn btn-primary auth-submit">LOG IN</button>
+    </form>
+
+    <p class="auth-note">
+      Profiles live in this browser. Sign in to reach the menu and your dashboard. In a local match
+      both callsigns are checked against registered profiles, so both players can be rated.
+    </p>
+  </div>
+
+  <div class="scanline" aria-hidden="true"></div>
+</section>
+
+<section id="screen-dashboard" class="screen">
+  <div class="panel dashboard-panel">
+    <div class="dash-header">
+      <div class="dash-identity">
+        <p class="dash-kicker">PLAYER PROFILE</p>
+        <h2 id="dash-name" class="dash-name">CALLSIGN</h2>
+        <p id="dash-since" class="dash-since">—</p>
+      </div>
+      <div class="dash-rating">
+        <span id="dash-tier" class="dash-tier">SILVER</span>
+        <span id="dash-rating" class="dash-rating-value">1200</span>
+        <span class="dash-rating-label">RATING</span>
+        <span id="dash-peak" class="dash-peak">PEAK 1200</span>
+      </div>
+    </div>
+
+    <div class="dash-stats">
+      <div class="stat-tile"><span id="stat-matches" class="stat-value">0</span><span class="stat-label">MATCHES</span></div>
+      <div class="stat-tile"><span id="stat-wins" class="stat-value stat-good">0</span><span class="stat-label">WINS</span></div>
+      <div class="stat-tile"><span id="stat-losses" class="stat-value stat-bad">0</span><span class="stat-label">LOSSES</span></div>
+      <div class="stat-tile"><span id="stat-draws" class="stat-value">0</span><span class="stat-label">DRAWS</span></div>
+      <div class="stat-tile"><span id="stat-winrate" class="stat-value">0%</span><span class="stat-label">WIN RATE</span></div>
+      <div class="stat-tile"><span id="stat-streak" class="stat-value">0</span><span class="stat-label">STREAK</span></div>
+      <div class="stat-tile"><span id="stat-best" class="stat-value">0</span><span class="stat-label">BEST STREAK</span></div>
+      <div class="stat-tile"><span id="stat-accuracy" class="stat-value">0%</span><span class="stat-label">ACCURACY</span></div>
+      <div class="stat-tile"><span id="stat-speed" class="stat-value">—</span><span class="stat-label">AVG ANSWER</span></div>
+    </div>
+
+    <h3 class="dash-section-title">RECENT MATCHES</h3>
+    <div id="dash-recent" class="match-list match-list-compact"></div>
+
+    <h3 class="dash-section-title">LOCAL LEADERBOARD</h3>
+    <div id="dash-leaderboard" class="leaderboard"></div>
+    <button id="btn-remove-others" class="btn btn-ghost btn-danger btn-small" type="button">REMOVE ALL OTHER PROFILES</button>
+
+    <h3 class="dash-section-title">MATCH SETTINGS</h3>
+    <div class="dash-settings">
+      <div class="settings-row">
+        <div class="settings-label-wrap">
+          <span class="settings-label">ROUND TIMER</span>
+          <span class="settings-hint">Seconds per round, for every match you start (3–60).</span>
+        </div>
+        <div class="settings-control">
+          <input id="dash-round-seconds" class="setup-input editor-timer-input" type="number" min="3" max="60" step="1" value="10">
+          <span class="editor-timer-unit">SEC</span>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label-wrap">
+          <span class="settings-label">QUESTION SET</span>
+          <span class="settings-hint"><span id="dash-question-count">0</span> of <span id="dash-question-total">0</span> questions active in your default set.</span>
+        </div>
+        <button id="btn-dash-settings" class="btn btn-ghost btn-small">MANAGE QUESTIONS</button>
+      </div>
+    </div>
+
+    <div class="dash-actions">
+      <button id="btn-dash-sign-out" class="btn btn-ghost">SIGN OUT</button>
+      <button id="btn-dash-menu" class="btn btn-primary">MENU</button>
+    </div>
+  </div>
+</section>
+
+<section id="screen-history" class="screen">
+  <div class="panel history-panel">
+    <h2 class="panel-title">MATCH HISTORY</h2>
+
+    <div class="history-summary">
+      <span id="history-count" class="history-count">0 MATCHES</span>
+      <span id="history-record" class="history-record">0W · 0L · 0D</span>
+    </div>
+
+    <div id="history-list" class="match-list"></div>
+
+    <div class="setup-actions">
+      <button id="btn-history-clear" class="btn btn-ghost btn-danger">CLEAR HISTORY</button>
+      <button id="btn-history-back" class="btn btn-primary">BACK</button>
+    </div>
+  </div>
+</section>
+
+<section id="screen-editor" class="screen">
+  <div class="panel editor-panel">
+
+    <div id="editor-list-view">
+      <h2 class="panel-title">QUESTION SET</h2>
+      <p id="editor-target-hint" class="editor-subtitle">Your default question set.</p>
+
+      <div class="editor-list-header">
+        <span class="editor-list-title">QUESTIONS (<span id="editor-question-count">0</span> of <span id="editor-question-total">0</span> active)</span>
+        <button id="btn-editor-add" class="btn btn-ghost btn-small">+ ADD QUESTION</button>
+      </div>
+
+      <div id="editor-question-list" class="editor-question-list"></div>
+
+      <div class="setup-actions editor-bottom-actions">
+        <button id="btn-editor-reset" class="btn btn-ghost">RESET TO DEFAULTS</button>
+        <button id="btn-editor-done" class="btn btn-primary">DONE</button>
+      </div>
+    </div>
+
+    <div id="editor-form-view" hidden>
+      <h2 id="editor-form-title" class="panel-title">ADD QUESTION</h2>
+
+      <div class="editor-form-grid">
+        <div class="setup-row editor-field-half">
+          <label class="setup-label" for="input-q-type">TYPE LABEL</label>
+          <input id="input-q-type" class="setup-input" type="text" maxlength="24" placeholder="e.g. CONCEPT, DEBUGGING">
+        </div>
+        <div class="setup-row editor-field-half">
+          <label class="setup-label" for="input-q-category">CATEGORY</label>
+          <input id="input-q-category" class="setup-input" type="text" maxlength="24" placeholder="e.g. Loops, Closures">
+        </div>
+        <div class="setup-row editor-field-half">
+          <label class="setup-label" for="input-q-difficulty">DIFFICULTY</label>
+          <select id="input-q-difficulty" class="setup-input editor-select">
+            <option value="1">EASY</option>
+            <option value="2">MEDIUM</option>
+            <option value="3">HARD</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="setup-row">
+        <label class="setup-label" for="input-q-prompt">QUESTION PROMPT</label>
+        <textarea id="input-q-prompt" class="setup-input editor-textarea" rows="2" maxlength="240" placeholder="What does this code do?"></textarea>
+      </div>
+
+      <div class="setup-row">
+        <label class="setup-label" for="input-q-code">CODE SNIPPET (OPTIONAL)</label>
+        <textarea id="input-q-code" class="setup-input editor-textarea editor-code-textarea" rows="4" maxlength="600" placeholder="Leave blank if this question has no code block"></textarea>
+      </div>
+
+      <div class="editor-options-header">
+        <span class="setup-label">ANSWER OPTIONS &amp; KEY</span>
+        <span class="editor-timer-hint">Pick the radio button next to the correct answer</span>
+      </div>
+      <div id="editor-options-list" class="editor-options-list"></div>
+      <button id="btn-editor-add-option" class="btn btn-ghost btn-small editor-add-option-btn">+ ADD OPTION</button>
+
+      <p id="editor-form-error" class="lobby-error" hidden></p>
+
+      <div class="setup-actions editor-form-actions">
+        <button id="btn-editor-delete" class="btn btn-ghost btn-danger" hidden>DELETE</button>
+        <div class="editor-form-actions-right">
+          <button id="btn-editor-cancel" class="btn btn-ghost">CANCEL</button>
+          <button id="btn-editor-save" class="btn btn-primary">SAVE QUESTION</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="screen-how" class="screen">
+  <div class="panel how-panel">
+    <h2 class="panel-title">HOW TO PLAY</h2>
+    <ol class="how-list">
+      <li><span class="how-num">01</span> Play <strong>local</strong> on one screen, or go <strong>online</strong> and battle a friend on another device.</li>
+      <li><span class="how-num">02</span> Every round shows one programming question to both players at the same time.</li>
+      <li><span class="how-num">03</span> Race the clock. The first player to lock in the correct answer wins the round and scores a point.</li>
+      <li><span class="how-num">04</span> A wrong answer doesn't end your round — the other player can still win it while your side shows "locked out."</li>
+      <li><span class="how-num">05</span> If the timer hits zero with no correct answer, the round is a draw. No points awarded.</li>
+      <li><span class="how-num">06</span> For online play: one player creates a lobby and shares the code, the other joins with it. Before sharing, the host sets that lobby's round timer and picks its question set.</li>
+      <li><span class="how-num">07</span> After a fixed number of rounds, the higher score wins the match.</li>
+      <li><span class="how-num">08</span> Sign in with a <strong>callsign</strong> to play. Your dashboard keeps the rating, the stat sheet and the match history, and it is where you change the round timer and the question bank.</li>
+    </ol>
+    <button id="btn-how-back" class="btn btn-ghost">BACK</button>
+  </div>
+</section>
+
+<section id="screen-setup" class="screen">
+  <div class="panel setup-panel">
+    <h2 class="panel-title">ENTER YOUR CALLSIGNS</h2>
+
+    <div class="setup-row">
+      <label class="setup-label p1-color" for="input-p1">PLAYER 1</label>
+      <input id="input-p1" class="setup-input p1-border" type="text" maxlength="14" placeholder="PLAYER_ONE" autocomplete="off">
+    </div>
+
+    <div class="setup-row">
+      <label class="setup-label p2-color" for="input-p2">PLAYER 2</label>
+      <input id="input-p2" class="setup-input p2-border" type="text" maxlength="14" placeholder="PLAYER_TWO" autocomplete="off">
+    </div>
+
+    <p class="setup-hint" id="setup-profile-hint" hidden></p>
+
+    <div class="setup-actions">
+      <button id="btn-setup-back" class="btn btn-ghost">BACK</button>
+      <button id="btn-setup-continue" class="btn btn-primary">CONTINUE</button>
+    </div>
+  </div>
+</section>
+
+<section id="screen-online-menu" class="screen">
+  <div class="panel">
+    <h2 class="panel-title">ONLINE MATCH</h2>
+    <div class="online-choice">
+      <button id="btn-create-lobby" class="btn btn-primary online-choice-btn">CREATE LOBBY</button>
+      <p class="online-choice-hint">Start a match and get a code to send a friend.</p>
+    </div>
+    <div class="online-choice">
+      <button id="btn-join-lobby" class="btn btn-primary online-choice-btn">JOIN LOBBY</button>
+      <p class="online-choice-hint">Have a code? Enter it and jump in.</p>
+    </div>
+    <button id="btn-online-back" class="btn btn-ghost">BACK</button>
+  </div>
+</section>
+
+<section id="screen-lobby-host" class="screen">
+  <div class="panel setup-panel">
+    <h2 class="panel-title">CREATE LOBBY</h2>
+
+    <div id="host-name-step">
+      <div class="setup-row">
+        <label class="setup-label p1-color" for="input-host-name">YOUR NAME</label>
+        <input id="input-host-name" class="setup-input p1-border" type="text" maxlength="14" placeholder="PLAYER_ONE" autocomplete="off">
+      </div>
+
+      <div class="lobby-settings">
+        <div class="lobby-settings-head">
+          <span class="editor-list-title">MATCH SETTINGS</span>
+          <span class="editor-timer-hint">This lobby only</span>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-label-wrap">
+            <span class="settings-label">ROUND TIMER</span>
+            <span class="settings-hint">Seconds per round (3–60).</span>
+          </div>
+          <div class="settings-control">
+            <input id="lobby-round-seconds" class="setup-input editor-timer-input" type="number" min="3" max="60" step="1" value="10">
+            <span class="editor-timer-unit">SEC</span>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-label-wrap">
+            <span class="settings-label">QUESTION SET</span>
+            <span class="settings-hint"><span id="lobby-question-count">0</span> of <span id="lobby-question-total">0</span> questions active — your guest plays exactly these.</span>
+          </div>
+          <button id="btn-lobby-questions" class="btn btn-ghost btn-small">CHOOSE QUESTIONS</button>
+        </div>
+      </div>
+
+      <div class="setup-actions">
+        <button id="btn-host-back" class="btn btn-ghost">BACK</button>
+        <button id="btn-host-generate" class="btn btn-primary">GENERATE CODE</button>
+      </div>
+    </div>
+
+    <div id="host-waiting-step" hidden>
+      <p class="lobby-code-label">SHARE THIS CODE</p>
+      <div id="lobby-code-display" class="lobby-code">------</div>
+      <p id="host-settings-summary" class="lobby-status"></p>
+      <p id="host-status-text" class="lobby-status">Connecting to relay…</p>
+      <div id="host-guest-row" class="lobby-guest-row" hidden>
+        <span class="lobby-guest-dot"></span>
+        <span id="host-guest-name" class="lobby-guest-name"></span>
+        <span class="lobby-guest-joined">JOINED</span>
+      </div>
+      <div class="setup-actions">
+        <button id="btn-host-cancel" class="btn btn-ghost">CANCEL</button>
+        <button id="btn-host-start" class="btn btn-primary" disabled>START MATCH</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="screen-lobby-join" class="screen">
+  <div class="panel setup-panel">
+    <h2 class="panel-title">JOIN LOBBY</h2>
+
+    <div id="join-form-step">
+      <div class="setup-row">
+        <label class="setup-label p2-color" for="input-join-name">YOUR NAME</label>
+        <input id="input-join-name" class="setup-input p2-border" type="text" maxlength="14" placeholder="PLAYER_TWO" autocomplete="off">
+      </div>
+      <div class="setup-row">
+        <label class="setup-label p2-color" for="input-join-code">LOBBY CODE</label>
+        <input id="input-join-code" class="setup-input p2-border code-input" type="text" maxlength="10" placeholder="XXXXXX" autocomplete="off">
+      </div>
+      <p id="join-error" class="lobby-error" hidden></p>
+      <div class="setup-actions">
+        <button id="btn-join-back" class="btn btn-ghost">BACK</button>
+        <button id="btn-join-connect" class="btn btn-primary">JOIN</button>
+      </div>
+    </div>
+
+    <div id="join-waiting-step" hidden>
+      <p class="lobby-status" id="join-status-text">Connecting…</p>
+      <div class="setup-actions">
+        <button id="btn-join-cancel" class="btn btn-ghost">CANCEL</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="screen-vs" class="screen">
+  <div class="vs-wrap">
+    <div class="vs-card vs-card-p1">
+      <span class="vs-label">PLAYER 1</span>
+      <span id="vs-name-p1" class="vs-name"></span>
+      <span id="vs-rating-p1" class="vs-rating" hidden></span>
+    </div>
+
+    <div class="vs-center">
+      <span class="vs-versus">VS</span>
+    </div>
+
+    <div class="vs-card vs-card-p2">
+      <span class="vs-label">PLAYER 2</span>
+      <span id="vs-name-p2" class="vs-name"></span>
+      <span id="vs-rating-p2" class="vs-rating" hidden></span>
+    </div>
+  </div>
+  <button id="btn-vs-begin" class="btn btn-primary vs-begin-btn">BEGIN BATTLE</button>
+  <p id="vs-waiting-text" class="lobby-status" hidden>Waiting for the host to begin…</p>
+</section>
+
+<section id="screen-game" class="screen">
+  <div class="game-hud">
+    <div class="hud-left">
+      <span class="hud-label">ROUND</span>
+      <span id="hud-round" class="hud-value">1 / 8</span>
+    </div>
+    <div class="hud-center">
+      <div id="timer-ring" class="timer-ring">
+        <span id="timer-value" class="timer-value">10.0</span>
+      </div>
+    </div>
+    <div class="hud-right">
+      <span class="hud-label">CATEGORY</span>
+      <span id="hud-category" class="hud-value">—</span>
+    </div>
+  </div>
+
+  <div class="battle-grid">
+
+    <div id="side-p1" class="player-side side-p1">
+      <div class="player-header">
+        <span id="name-p1" class="player-name">PLAYER 1</span>
+        <span id="score-p1" class="player-score">0</span>
+      </div>
+      <div id="status-p1" class="player-status">WAITING...</div>
+      <div id="answers-p1" class="answer-area"></div>
+      <div id="time-p1" class="response-time"></div>
+    </div>
+
+    <div class="question-panel">
+      <div class="vs-indicator">⚔</div>
+      <p id="question-type" class="question-type">MULTIPLE CHOICE</p>
+      <h2 id="question-text" class="question-text">Loading question…</h2>
+      <pre id="question-code" class="question-code" hidden></pre>
+    </div>
+
+    <div id="side-p2" class="player-side side-p2">
+      <div class="player-header">
+        <span id="name-p2" class="player-name">PLAYER 2</span>
+        <span id="score-p2" class="player-score">0</span>
+      </div>
+      <div id="status-p2" class="player-status">WAITING...</div>
+      <div id="answers-p2" class="answer-area"></div>
+      <div id="time-p2" class="response-time"></div>
+    </div>
+
+  </div>
+</section>
+
+<section id="screen-round-result" class="screen">
+  <div class="panel result-panel">
+    <h2 id="round-result-title" class="result-title">PLAYER 1 WINS THE ROUND!</h2>
+
+    <div class="result-answer">
+      <span class="result-label">CORRECT ANSWER</span>
+      <span id="round-correct-answer" class="result-correct-answer">—</span>
+    </div>
+
+    <div class="result-times">
+      <div class="result-time-card">
+        <span id="result-name-p1" class="result-time-name">PLAYER 1</span>
+        <span id="result-time-p1" class="result-time-value">—</span>
+      </div>
+      <div class="result-time-card">
+        <span id="result-name-p2" class="result-time-name">PLAYER 2</span>
+        <span id="result-time-p2" class="result-time-value">—</span>
+      </div>
+    </div>
+
+    <div class="result-scores">
+      <span id="result-score-p1" class="result-score">PLAYER 1: 0</span>
+      <span id="result-score-p2" class="result-score">PLAYER 2: 0</span>
+    </div>
+
+    <button id="btn-next-round" class="btn btn-primary">NEXT ROUND</button>
+    <p id="round-waiting-text" class="lobby-status" hidden>Waiting for the host to continue…</p>
+  </div>
+</section>
+
+<section id="screen-gameover" class="screen">
+  <div class="panel gameover-panel">
+    <p class="gameover-kicker">GAME OVER</p>
+    <h2 id="gameover-winner" class="gameover-winner">🏆 PLAYER 1 WINS!</h2>
+
+    <div class="gameover-scores">
+      <div class="gameover-score-card">
+        <span id="gameover-name-p1" class="gameover-score-name">PLAYER 1</span>
+        <span id="gameover-score-p1" class="gameover-score-value">0</span>
+      </div>
+      <div class="gameover-score-card">
+        <span id="gameover-name-p2" class="gameover-score-name">PLAYER 2</span>
+        <span id="gameover-score-p2" class="gameover-score-value">0</span>
+      </div>
+    </div>
+
+    <div id="gameover-rating" class="gameover-rating" hidden>
+      <span class="gameover-rating-label">RATING UPDATE</span>
+      <div id="gameover-rating-rows" class="gameover-rating-rows"></div>
+    </div>
+
+    <p id="gameover-guest-note" class="gameover-guest-note" hidden>
+      Sign in to save this match, rate your callsign and build your dashboard.
+    </p>
+
+    <div class="gameover-actions">
+      <button id="btn-play-again" class="btn btn-primary">PLAY AGAIN</button>
+      <button id="btn-main-menu" class="btn btn-ghost">MAIN MENU</button>
+    </div>
+    <p id="gameover-waiting-text" class="lobby-status" hidden>Waiting for the host…</p>
+  </div>
+</section>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="store.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
